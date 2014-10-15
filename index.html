@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>股票计算</title>
+<link rel="stylesheet" type="text/css" href="css/semantic.css">
+<script src="javascript/jquery-2.1.1.min.js"></script>
+<script src="javascript/semantic.js"></script>
+<script>
+$(document).ready(function(e) {
+    
+	$("#stockResult").click(function(e) {
+        var maxV = parseFloat($("#maxValue").val());
+		var minV = parseFloat($("#minValue").val());
+		
+		if(maxV != "" && minV != "") {
+			
+			$(".z-v").html(maxV.toFixed(2));
+			$(".d-v").html(minV.toFixed(2));
+			
+			var g = (maxV - minV);
+			
+			var g61 = g/6;
+			var g31 = g/3;
+			var g21 = g/2;
+			var g32 = g/3 * 2;
+			
+			var z = g/minV * 100;
+			var z61 = maxV - g61;
+			var z31 = maxV - g31;
+			var z21 = maxV - g21;
+			var z32 = maxV - g32;
+			
+			var d = g/maxV * 100;
+			var d61 = minV + g61;
+			var d31 = minV + g31;
+			var d21 = minV + g21;
+			var d32 = minV + g32;
+			
+			$("#z").html(z.toFixed(2) + "%");
+			$("#z-1-6").html(z61.toFixed(2));
+			$("#z-1-3").html(z31.toFixed(2));
+			$("#z-1-2").html(z21.toFixed(2));
+			$("#z-2-3").html(z32.toFixed(2));
+			
+			$("#d").html(-d.toFixed(2) + "%"); 
+			$("#d-1-6").html(d61.toFixed(2));
+			$("#d-1-3").html(d31.toFixed(2));
+			$("#d-1-2").html(d21.toFixed(2));
+			$("#d-2-3").html(d32.toFixed(2));
+		}
+    });
+});
+</script>
+</head>
+
+<body>
+<div class="ui three column grid">
+  <div class=" four wide column">
+    <div class="ui fluid form segment">
+      <div class="field">
+        <input placeholder="最高" type="text" name="maxValue" id="maxValue">
+      </div>
+      <div class="field">
+        <input placeholder="最低" type="text" name="minValue" id="minValue">
+      </div>
+      <a class="ui small linkedin button" id="stockResult">计算</a> </div>
+  </div>
+  <div class="four wide column">
+    <div class="ui vertical fluid menu">
+      <div class="header item"> 计算结果 </div>
+      <div class="item"> 涨幅<a class="ui label z-v"></a><a class="ui red label" id="z"></a> &nbsp;</div>
+      <div class="item"> 1/6<a class="ui label z-v"></a><a class="ui green label" id="z-1-6"></a></div>
+      <div class="item"> 1/3<a class="ui label z-v"></a><a class="ui green label" id="z-1-3"></a></div>
+      <div class="item"> 1/2<a class="ui label z-v"></a><a class="ui green label" id="z-1-2"></a></div>
+      <div class="item"> 2/3<a class="ui label z-v"></a><a class="ui green label" id="z-2-3"></a></div>
+      <div class="item"> 跌幅<a class="ui label d-v"></a><a class="ui green label" id="d"></a> &nbsp;</div>
+      <div class="item"> 1/6<a class="ui label d-v"></a><a class="ui red label" id="d-1-6"></a></div>
+      <div class="item"> 1/3<a class="ui label d-v"></a><a class="ui red label" id="d-1-3"></a></div>
+      <div class="item"> 1/2<a class="ui label d-v"></a><a class="ui red label" id="d-1-2"></a></div>
+      <div class="item"> 2/3<a class="ui label d-v"></a><a class="ui red label" id="d-2-3"></a></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
