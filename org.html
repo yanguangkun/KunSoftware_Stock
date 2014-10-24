@@ -1,0 +1,423 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Untitled Document</title>
+
+<script src="javascript/jquery-2.1.1.min.js"></script>
+<script>
+
+var offsetLeft = 20;
+var offsetTop = 20;
+var paddingLeft = 10;
+var paddinLevel = 20;
+
+var paddingTop = 25;
+var paddingLine = 2;
+
+var levels = [];
+function OrgInfo(id,name,pid,level) {
+	var o = { 
+		id : id, 
+		name : name,
+		pid : pid, 
+		level : level, 
+		group_p: 'g-p-' + pid + "-" + level,
+		group_l: 'g-l-' + level,
+		create : function(){ 
+			var className = "org1";
+			if(this.level >= 2) className = "org2";
+			$(".main #org").append('<div class="'+className+'" id="'+this.id+'" name="'+this.name+'" pid="'+this.pid+'" level="'+this.level+'" group_p="'+this.group_p+'" group_l="'+this.group_l+'">'+this.name+'</div>');
+			
+			if(levels[this.level]) {
+				if($("#" + this.id).outerHeight() > levels[this.level]) {
+					levels[this.level] = $("#" + this.id).outerHeight();
+				}
+			} else {
+				levels[this.level] = $("#" + this.id).outerHeight();
+			}
+		} 
+	};
+	
+	return o; 
+}
+
+function init2() {
+	var orgInfos = [
+	{id:"1",name:"易招标",pid:"0",level:"0"},
+	{id:"2",name:"研发中心",pid:"1",level:"1"},
+	{id:"3",name:"交付中心",pid:"1",level:"1"},
+	{id:"3",name:"交付一部",pid:"3",level:"2"},
+	{id:"3",name:"交付二部",pid:"3",level:"2"}
+	];
+	
+	for(i = 0;i < orgInfos.length;i++) {
+		createOrgInfo(orgInfos[i]);
+	}
+}
+
+function createOrgInfo(value){ 
+
+	 var orgInfo = OrgInfo(value.id,value.name,value.pid,value.level);
+	 orgInfo.create();
+} 
+		
+function init() {
+	
+	var maxWidth = $(".main").width();
+	
+	var orgInfos = [];
+	orgInfos[0] = new OrgInfo("1","易招标","0","0");
+	orgInfos[1] = new OrgInfo("2","研发中心中心","1","1");
+	orgInfos[2] = new OrgInfo("3","交付中心","1","1");
+	
+	orgInfos[3] = new OrgInfo("4","交付一部","2","2");
+	orgInfos[4] = new OrgInfo("5","交付两部","2","2")
+	/*orgInfos[4] = new OrgInfo("5","交付两部","2","2");
+	orgInfos[5] = new OrgInfo("6","交付一部","2","2");
+	orgInfos[6] = new OrgInfo("7","交付两部","2","2");
+	
+	orgInfos[7] = new OrgInfo("8","交付一部","2","2");
+	orgInfos[8] = new OrgInfo("9","交付两部","2","2");
+	orgInfos[9] = new OrgInfo("10","交付一部","2","2");
+	orgInfos[10] = new OrgInfo("11","交付两部","2","2");*/
+	
+	orgInfos[5] = new OrgInfo("10","交付一部","3","2");
+	/*orgInfos[5] = new OrgInfo("11","交付两部","3","2");
+	orgInfos[6] = new OrgInfo("12","交付一部","3","2");
+	orgInfos[7] = new OrgInfo("13","交付两部","3","2");*/
+	
+	
+	
+	//orgInfos[7] = new OrgInfo("6","交付两部","5","3");
+	//orgInfos[8] = new OrgInfo("7","交付两部","5","3");
+	//orgInfos[9] = new OrgInfo("8","交付两部","4","3");
+	//orgInfos[10] = new OrgInfo("9","交付两部","4","3");
+	
+	for(i = 0;i < orgInfos.length;i++) {
+		orgInfos[i].create();
+	}
+	
+}
+
+function changePosition() {
+	
+	var maxLevel = 1;
+	
+	for(i = maxLevel;i >=0;i--) {
+		
+		var one = $("[level='"+i+"']:first").attr("group_p");
+		$("[group_p='"+one+"']").each(function(index, element) {
+			var top = getLevelHeight($(this).attr("level"));
+			var left = offsetLeft;
+            var prevObj = $(this).prev();
+			if(prevObj != null && prevObj.length > 0) {
+				left += prevObj.position().left + prevObj.outerWidth();
+			}  
+			
+			$(this).css({left:left,top:top});
+        });
+	} 
+}
+
+function levelLine(level) {
+	
+	var levelList = getOrgListByLevel(level);
+	var current = null;
+	
+	for(j = 0; j < levelList.length;j++) {
+		current = $(levelList[j]);
+		currentLine(current);
+	} 
+}
+
+function levelPosition(level,isStart) {
+	
+	var levelList = getOrgListByLevel(level);
+	var childList = null;
+	
+	var current = null;
+	var offset = offsetLeft;
+	var retPosition = null;
+	for(j = 0; j < levelList.length;j++) {
+		current = $(levelList[j]);
+		if(isStart) { 
+			childList = getOrgListByParent(current.attr("id"));
+			if(childList.length > 0) {
+				retPosition = childPosition(childList,offset);
+				offset = retPosition[1] + paddingLeft;
+			}
+		} 
+		
+		retPosition = currentPosition(current,offset);
+		
+		if(retPosition[1] > offset) offset = retPosition[1];
+		offset += paddinLevel;
+	} 
+}
+
+/** 获取某一层级的高度 */
+function getLevelHeight(level) {
+	
+	var levelHeight = offsetTop + level * (paddingTop * 2 + paddingLine);
+	
+	for(levelI = level - 1;levelI >= 0;levelI--) {
+		levelHeight += levels[levelI];
+	}
+	
+	return levelHeight;
+}
+
+/** 获取某一级别的组织列表 */
+function getOrgListByLevel(level) {
+
+	return $("[level='"+level+"']")
+}
+
+/** 获取某一级别的组织列表 */
+function getOrgListByParent(pid) {
+	
+	var pLevel = $("#" + pid).attr("level");
+	var child = 'g-p-' + pid + "-" + (parseInt(pLevel) + 1);
+	return $("[group_p='"+child+"']");
+}
+
+/** 当前节点线 */
+function currentLine(currentOrg) { 
+	
+	var width = currentOrg.outerWidth();
+	var height = currentOrg.outerHeight();
+	var lineLeft = currentOrg.position().left;
+	var lineTop = currentOrg.position().top;
+	var childList = getOrgListByParent(currentOrg.attr("id"));
+	
+	if(childList.length <= 0) return;
+	
+	lineLeft += (width - paddingLine)/2;
+	lineTop += height;
+	
+	$('<div class="line"></div>').appendTo(".main #line").css({left:lineLeft,top:lineTop,width:paddingLine,height:paddingTop});
+	
+	childLine(childList);
+}
+
+/** 子节点位置 */
+function childLine(childList) {
+	 
+	var firstChild = $(childList[0]);
+	var lastChild = $(childList[childList.length - 1]);
+	
+	var firstLeft = firstChild.position().left;
+	var firstWidth = firstChild.outerWidth();
+	var firstTop = firstChild.position().top;
+	var lastLeft = lastChild.position().left;
+	var lastWidth = lastChild.outerWidth();
+	
+	var lineLeft = firstLeft + (firstWidth - paddingLine) /2;
+	var lineWidth = lastLeft + (lastWidth - paddingLine) /2 - lineLeft + paddingLine;
+	var lineTop = firstTop - paddingTop - paddingLine;
+	
+	$('<div class="line"></div>').appendTo(".main #line").css({left:lineLeft,top:lineTop,width:lineWidth,height:paddingLine});
+	
+	for(lineI = 0;lineI < childList.length;lineI++) {
+		currentChildLine($(childList[lineI]));
+	}
+}
+
+/** 当前节点线 */
+function currentChildLine(currentOrg) { 
+	
+	var width = currentOrg.outerWidth();
+	var height = currentOrg.outerHeight();
+	var lineLeft = currentOrg.position().left;
+	var lineTop = currentOrg.position().top; 
+	
+	lineLeft += (width - paddingLine)/2;
+	lineTop -= paddingTop;
+	
+	$('<div class="line"></div>').appendTo(".main #line").css({left:lineLeft,top:lineTop,width:paddingLine,height:paddingTop});
+	 
+}
+
+/** 当前节点位置 */
+function currentPosition(currentOrg,defaultLeft) {
+	
+	var startLeft = null;
+	var endLeft = null;
+	var left = null;
+	var top = getLevelHeight(currentOrg.attr("level"));
+	
+	var prevObj = currentOrg.prev("[group_p='"+currentOrg.attr("group_p")+"']");
+	var minLeft = 0;
+	var offsetChild = 0;
+	if(prevObj != null && prevObj.length > 0) {
+		minLeft = prevObj.position().left + prevObj.outerWidth();
+	} 
+	
+	var childList = getOrgListByParent(currentOrg.attr("id"));
+	if(childList.length > 0) {
+		var firstChild = $(childList[0]);
+		var lastChild = $(childList[childList.length - 1]);
+		
+		var firstLeft = firstChild.position().left;
+		var lastLeft = lastChild.position().left;
+		var lastWidth = lastChild.outerWidth();
+		
+		left = firstLeft + (lastLeft + lastWidth - firstLeft)/2 - (currentOrg.outerWidth()/2);
+		
+	} else {
+		left = defaultLeft;
+	}
+	
+	if(left <= minLeft) {
+		offsetChild = minLeft - left + paddingLeft;
+		left = minLeft + paddingLeft;
+		
+		childList.each(function(index, element) {
+           $(this).css({left:$(this).position().left + offsetChild});	 
+        });
+	}
+	
+	currentOrg.css({left:left,top:top});
+	
+	startLeft = left;
+	endLeft = left + currentOrg.outerWidth();	
+	
+	var ret = [];
+	ret[0] = startLeft;
+	ret[1] = endLeft;
+	return ret
+}
+
+/** 子节点位置 */
+function childPosition(childList,offset) {
+	
+	var top = getLevelHeight($(childList[0]).attr("level"));
+	var left = offset;
+	
+	var startLeft = null;
+	var endLeft = null;
+	
+	var childCurrent = null;
+	for(c = 0;c < childList.length;c++) {
+		childCurrent = $(childList[c]);
+		var prevObj = childCurrent.prev("[group_p='"+childCurrent.attr("group_p")+"']");
+		if(prevObj != null && prevObj.length > 0) {
+			left = paddingLeft + prevObj.position().left + prevObj.outerWidth();
+		}  
+		
+		childCurrent.css({left:left,top:top});
+		
+		if(c == 0) {
+			startLeft = left;	
+		}
+		
+		if(c == childList.length - 1) {
+			endLeft = left + childCurrent.outerWidth();	
+		}
+	}
+	
+	var ret = [];
+	ret[0] = startLeft;
+	ret[1] = endLeft;
+	return ret
+}
+
+function getMax(val1,val2) {
+	
+	return Math.max(parseInt(val1), parseInt(val2));
+}
+
+$(document).ready(function(e) {
+    
+	
+	$("#button").click(function(e) {
+		$(".main #org").html("");
+		$(".main #line").html("");
+        init2();
+    });
+	
+	$("#button2").click(function(e) {
+        //changePosition();
+		//levelPosition(2,true);
+		levelPosition(1,true);
+		levelPosition(0,false);
+		
+		levelLine(0);
+		levelLine(1);
+		//levelLine(2);
+    });
+	
+	/*alert($("[group_p='g-p-1-2']").length);
+	
+	var firstGroup = "g-p-1-2";
+	
+	var firstGroupObj = $("[group_p='g-1-2']");
+	var offsetLeft = 20;
+	
+	for(j = 0;j < firstGroupObj.length;j++) {
+		
+		parseInt(firstGroupObj.attr("level")) * 20 ;
+	}*/
+	 
+	
+	//var preObj = null;
+	//for(i = 0;i < child2.length;i++) {
+		//preObj = createOrg(child2[i],preObj,i,30,100);
+	//}
+});
+
+function createOrg(currentObj,preObj,idSeq,offsetLeft,offsetTop) {
+	
+	var id = 'org_'+idSeq;
+	var top = offsetTop;
+	var left = offsetLeft ;
+	
+	if(preObj != null) { 
+	
+		left = preObj.position().left + preObj.outerWidth() + 10;	
+		top = preObj.position().top; 
+	}
+	
+	$(".main").append('<div class="org1" id="'+id+'">'+currentObj+'</div>');
+	
+	var obj = $("#" + id);
+	
+	obj.css({top:top,left:left});
+	
+	return obj;
+}
+</script>
+<style type="text/css">
+body {
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+}
+
+.main{ width:600px; height:600px; margin:auto; position:relative;}
+
+.main .org1{ position:absolute; left:20px; top:20px; background-color:#016a65; border-radius:3px; padding:5px 8px; color:#fff;}
+.main .org2{position:absolute; padding:5px; border:1px dotted #3f918d; border-radius:3px;color:#3f918d; width:12px; line-height:14px;}
+
+.main .line{ position:absolute; background-color:#207f79;}
+
+body,td,th {
+	font-size: 12px;
+}
+</style>
+
+</head>
+
+<body>
+<form name="form1" method="post" action="">
+  <input type="button" name="button" id="button" value="Button">
+  <input type="button" name="button2" id="button2" value="Button">
+</form>
+<div class="main">
+  <div id="org"></div>
+  <div id="line"></div>
+</div>
+</body>
+</html>
